@@ -1427,6 +1427,12 @@
     // CSS for the speed reader button
     const style = document.createElement('style');
     style.textContent = `
+      .sr-tweet-btn-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        align-self: center;
+      }
       .sr-tweet-btn {
         display: flex;
         align-items: center;
@@ -1439,6 +1445,8 @@
         background: transparent;
         border: none;
         padding: 0;
+        margin: 0;
+        vertical-align: middle;
       }
       .sr-tweet-btn:hover {
         background-color: rgba(217, 119, 87, 0.1);
@@ -1451,6 +1459,7 @@
         height: 18px;
         color: rgb(83, 100, 113);
         transition: color 0.2s;
+        display: block;
       }
       [data-theme="dark"] .sr-tweet-btn svg,
       .dark .sr-tweet-btn svg {
@@ -1478,7 +1487,7 @@
 
         // Create speed reader button container
         const btnContainer = document.createElement('div');
-        btnContainer.className = 'css-175oi2r r-18u37iz r-1h0z5md r-13awgt0';
+        btnContainer.className = 'css-175oi2r r-18u37iz r-1h0z5md r-13awgt0 sr-tweet-btn-wrap';
         btnContainer.innerHTML = `
           <button class="sr-tweet-btn" aria-label="Speed Read" title="Speed Read this tweet">
             <svg viewBox="0 0 24 24" fill="currentColor">
