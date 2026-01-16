@@ -1,0 +1,53 @@
+{
+  "manifest_version": 3,
+  "name": "Speed Reader by Claude",
+  "version": "1.3.0",
+  "description": "Speed read any highlighted text with RSVP technique. Works on all sites including Twitter/X.",
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  },
+  "action": {
+    "default_icon": {
+      "16": "icon.png",
+      "48": "icon.png"
+    },
+    "default_title": "Speed Reader Settings",
+    "default_popup": "popup.html"
+  },
+  "commands": {
+    "speed-read-selection": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Space",
+        "mac": "Command+Shift+Space"
+      },
+      "description": "Speed read selected text"
+    }
+  },
+  "permissions": [
+    "activeTab",
+    "contextMenus",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["content.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
