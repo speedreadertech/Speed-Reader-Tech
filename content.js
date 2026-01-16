@@ -1447,95 +1447,80 @@
   
   let selectionButton = null;
   let selectedText = '';
+  let buttonVisible = false;
   
   function createSelectionButton() {
-    if (selectionButton) return;
+    if (selectionButton) return selectionButton;
     
     selectionButton = document.createElement('div');
     selectionButton.id = 'sr-selection-btn';
     
-    // Inject styles directly to avoid CSP issues
-    const style = document.createElement('style');
-    style.textContent = `
-      #sr-selection-btn {
-        position: fixed !important;
-        bottom: 24px !important;
-        left: 24px !important;
-        z-index: 2147483646 !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 10px !important;
-        padding: 14px 20px !important;
-        background: linear-gradient(135deg, #D97757 0%, #C4583A 100%) !important;
-        color: white !important;
-        border-radius: 14px !important;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
-        font-size: 14px !important;
-        font-weight: 600 !important;
-        cursor: pointer !important;
-        box-shadow: 0 8px 24px rgba(217, 119, 87, 0.4), 0 2px 8px rgba(0,0,0,0.15) !important;
-        transform: translateY(100px) !important;
-        opacity: 0 !important;
-        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s, box-shadow 0.2s !important;
-        user-select: none !important;
-        -webkit-font-smoothing: antialiased !important;
-        border: none !important;
-        outline: none !important;
-      }
-      #sr-selection-btn.visible {
-        transform: translateY(0) !important;
-        opacity: 1 !important;
-      }
-      #sr-selection-btn:hover {
-        box-shadow: 0 12px 32px rgba(217, 119, 87, 0.5), 0 4px 12px rgba(0,0,0,0.2) !important;
-        transform: translateY(-2px) !important;
-      }
-      #sr-selection-btn:active {
-        transform: translateY(0) scale(0.98) !important;
-      }
-      #sr-selection-btn svg {
-        width: 18px !important;
-        height: 18px !important;
-        flex-shrink: 0 !important;
-      }
-      #sr-selection-btn .sr-btn-text {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 2px !important;
-      }
-      #sr-selection-btn .sr-btn-title {
-        font-size: 14px !important;
-        font-weight: 600 !important;
-        line-height: 1.2 !important;
-      }
-      #sr-selection-btn .sr-btn-hint {
-        font-size: 11px !important;
-        font-weight: 500 !important;
-        opacity: 0.85 !important;
-        line-height: 1 !important;
-      }
-      #sr-selection-btn .sr-btn-kbd {
-        display: inline-flex !important;
-        padding: 2px 5px !important;
-        background: rgba(255,255,255,0.2) !important;
-        border-radius: 4px !important;
-        font-size: 10px !important;
-        font-weight: 600 !important;
-        margin-left: 4px !important;
-      }
-    `;
-    document.head.appendChild(style);
+    // Use ALL inline styles to avoid any CSP issues
+    Object.assign(selectionButton.style, {
+      position: 'fixed',
+      bottom: '24px',
+      left: '24px',
+      zIndex: '2147483646',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+      padding: '14px 20px',
+      background: 'linear-gradient(135deg, #D97757 0%, #C4583A 100%)',
+      color: 'white',
+      borderRadius: '14px',
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      fontSize: '14px',
+      fontWeight: '600',
+      cursor: 'pointer',
+      boxShadow: '0 8px 24px rgba(217, 119, 87, 0.4), 0 2px 8px rgba(0,0,0,0.15)',
+      transform: 'translateY(100px)',
+      opacity: '0',
+      transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s',
+      userSelect: 'none',
+      WebkitFontSmoothing: 'antialiased',
+      border: 'none',
+      outline: 'none',
+      pointerEvents: 'auto'
+    });
     
-    selectionButton.innerHTML = `
-      <svg viewBox="0 0 24 24" fill="currentColor">
-        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-      </svg>
-      <div class="sr-btn-text">
-        <span class="sr-btn-title">Speed Read</span>
-        <span class="sr-btn-hint"><span class="sr-btn-kbd">Alt+S</span> or click</span>
-      </div>
-    `;
+    // SVG icon with inline styles
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('fill', 'currentColor');
+    Object.assign(svg.style, { width: '18px', height: '18px', flexShrink: '0' });
+    svg.innerHTML = '<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>';
+    
+    // Text container
+    const textDiv = document.createElement('div');
+    Object.assign(textDiv.style, { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' });
+    
+    const title = document.createElement('span');
+    title.textContent = 'Speed Read';
+    Object.assign(title.style, { fontSize: '14px', fontWeight: '600', lineHeight: '1.2', color: 'white' });
+    
+    const hint = document.createElement('span');
+    hint.textContent = 'Alt+S or click';
+    Object.assign(hint.style, { fontSize: '11px', fontWeight: '500', opacity: '0.85', lineHeight: '1', color: 'white' });
+    
+    textDiv.appendChild(title);
+    textDiv.appendChild(hint);
+    selectionButton.appendChild(svg);
+    selectionButton.appendChild(textDiv);
+    
+    // Hover effects via JS
+    selectionButton.addEventListener('mouseenter', () => {
+      if (buttonVisible) {
+        selectionButton.style.transform = 'translateY(-2px)';
+        selectionButton.style.boxShadow = '0 12px 32px rgba(217, 119, 87, 0.5), 0 4px 12px rgba(0,0,0,0.2)';
+      }
+    });
+    
+    selectionButton.addEventListener('mouseleave', () => {
+      if (buttonVisible) {
+        selectionButton.style.transform = 'translateY(0)';
+        selectionButton.style.boxShadow = '0 8px 24px rgba(217, 119, 87, 0.4), 0 2px 8px rgba(0,0,0,0.15)';
+      }
+    });
     
     selectionButton.addEventListener('click', (e) => {
       e.preventDefault();
@@ -1547,21 +1532,28 @@
     });
     
     document.body.appendChild(selectionButton);
+    return selectionButton;
   }
   
   function showSelectionButton(text) {
-    if (!selectionButton) createSelectionButton();
+    createSelectionButton();
     selectedText = text;
+    buttonVisible = true;
     
-    // Small delay to ensure DOM is ready
+    // Animate in
     requestAnimationFrame(() => {
-      selectionButton.classList.add('visible');
+      requestAnimationFrame(() => {
+        selectionButton.style.transform = 'translateY(0)';
+        selectionButton.style.opacity = '1';
+      });
     });
   }
   
   function hideSelectionButton() {
-    if (selectionButton) {
-      selectionButton.classList.remove('visible');
+    if (selectionButton && buttonVisible) {
+      selectionButton.style.transform = 'translateY(100px)';
+      selectionButton.style.opacity = '0';
+      buttonVisible = false;
     }
     selectedText = '';
   }
@@ -1600,7 +1592,7 @@
   
   // Hide when pressing Escape
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && selectionButton?.classList.contains('visible')) {
+    if (e.key === 'Escape' && buttonVisible) {
       hideSelectionButton();
       window.getSelection().removeAllRanges();
     }
