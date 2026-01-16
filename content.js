@@ -1048,7 +1048,7 @@
         </div>
 
         <div class="footer">
-          <span class="footer-text">by <a href="https://speedreader-claude.vercel.app" target="_blank">Claude</a></span>
+          <span class="footer-text">by <a href="https://speedreader.tech" target="_blank">Claude</a></span>
         </div>
       </div>
     `;
