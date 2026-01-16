@@ -7,147 +7,144 @@
   'use strict';
 
   // ============================================
-  // FLOATING BUTTON - Initialized FIRST
+  // FLOATING BUTTON - Completely Self-Contained
   // ============================================
   
-  let floatBtn = null;
-  let floatText = '';
-  let floatVisible = false;
-  let readerOverlay = null; // Will be set when reader opens
-  
-  function initFloatingButton() {
-    // Don't run if already initialized
-    if (document.getElementById('sr-float-btn')) {
-      floatBtn = document.getElementById('sr-float-btn');
-      return;
-    }
+  const SpeedReadButton = {
+    el: null,
+    text: '',
+    visible: false,
     
-    // Wait for body
-    if (!document.body) {
-      document.addEventListener('DOMContentLoaded', initFloatingButton);
-      return;
-    }
-    
-    // Create button
-    floatBtn = document.createElement('button');
-    floatBtn.id = 'sr-float-btn';
-    floatBtn.style.cssText = `
-      all: initial !important;
-      position: fixed !important;
-      bottom: 24px !important;
-      left: 24px !important;
-      z-index: 2147483647 !important;
-      display: none !important;
-      align-items: center !important;
-      gap: 8px !important;
-      padding: 14px 20px !important;
-      background: linear-gradient(135deg, #D97757, #C4583A) !important;
-      color: white !important;
-      border: none !important;
-      border-radius: 14px !important;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-      font-size: 14px !important;
-      font-weight: 600 !important;
-      cursor: pointer !important;
-      box-shadow: 0 6px 24px rgba(217, 119, 87, 0.5) !important;
-      -webkit-font-smoothing: antialiased !important;
-    `;
-    
-    floatBtn.innerHTML = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="white" style="flex-shrink:0"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-      <span style="color:white;font-weight:600">Speed Read</span>
-    `;
-    
-    // Hover
-    floatBtn.onmouseenter = () => { floatBtn.style.transform = 'scale(1.05)'; };
-    floatBtn.onmouseleave = () => { floatBtn.style.transform = 'scale(1)'; };
-    
-    // Click
-    floatBtn.onclick = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const txt = floatText;
-      hideFloatBtn();
-      window.getSelection()?.removeAllRanges();
-      if (txt && typeof openReader === 'function') {
-        openReader(txt);
+    init() {
+      if (this.el) return;
+      if (!document.body) {
+        document.addEventListener('DOMContentLoaded', () => this.init());
+        return;
       }
-    };
+      
+      this.el = document.createElement('button');
+      this.el.id = 'sr-float-btn';
+      this.el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg><span>Speed Read</span>`;
+      
+      this.el.style.cssText = `
+        all: initial;
+        display: none;
+        position: fixed;
+        bottom: 24px;
+        left: 24px;
+        z-index: 2147483647;
+        align-items: center;
+        gap: 8px;
+        padding: 14px 20px;
+        background: linear-gradient(135deg, #D97757, #C4583A);
+        color: white;
+        border: none;
+        border-radius: 14px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 6px 24px rgba(217, 119, 87, 0.5);
+        -webkit-font-smoothing: antialiased;
+        transition: transform 0.1s ease;
+      `;
+      
+      // Style the span inside
+      this.el.querySelector('span').style.cssText = 'color: white; font-weight: 600;';
+      this.el.querySelector('svg').style.cssText = 'flex-shrink: 0;';
+      
+      this.el.onmouseenter = () => this.el.style.transform = 'scale(1.05)';
+      this.el.onmouseleave = () => this.el.style.transform = 'scale(1)';
+      
+      this.el.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const textToRead = this.text;
+        this.hide();
+        window.getSelection()?.removeAllRanges();
+        if (textToRead && window.__openSpeedReader) {
+          window.__openSpeedReader(textToRead);
+        }
+      };
+      
+      document.body.appendChild(this.el);
+    },
     
-    document.body.appendChild(floatBtn);
-    console.log('[SR] Float button created');
-  }
-  
-  function playBoop() {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const g = ctx.createGain();
-      osc.connect(g); g.connect(ctx.destination);
-      osc.frequency.setValueAtTime(600, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.08);
-      g.gain.setValueAtTime(0.1, ctx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-      osc.start(); osc.stop(ctx.currentTime + 0.1);
-    } catch(e) {}
-  }
-  
-  function showFloatBtn(text) {
-    if (!floatBtn) initFloatingButton();
-    if (!floatBtn) return;
+    playSound() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.connect(g);
+        g.connect(ctx.destination);
+        osc.frequency.setValueAtTime(600, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.08);
+        g.gain.setValueAtTime(0.1, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.1);
+      } catch(e) {}
+    },
     
-    floatText = text;
+    show(text) {
+      if (!this.el) this.init();
+      if (!this.el) return;
+      
+      this.text = text;
+      
+      if (!this.visible) {
+        this.visible = true;
+        this.el.style.display = 'flex';
+        this.playSound();
+      }
+    },
     
-    if (!floatVisible) {
-      floatVisible = true;
-      floatBtn.style.display = 'flex';
-      floatBtn.style.opacity = '1';
-      floatBtn.style.transform = 'scale(1)';
-      playBoop();
+    hide() {
+      if (this.el) {
+        this.el.style.display = 'none';
+      }
+      this.visible = false;
+      this.text = '';
+    },
+    
+    check() {
+      // Don't show if reader overlay is open
+      if (document.getElementById('speed-reader-ext')) {
+        this.hide();
+        return;
+      }
+      
+      const sel = window.getSelection();
+      const text = sel ? sel.toString().trim() : '';
+      const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
+      
+      if (wordCount >= 3) {
+        this.show(text);
+      } else {
+        this.hide();
+      }
     }
-  }
+  };
   
-  function hideFloatBtn() {
-    if (floatBtn && floatVisible) {
-      floatBtn.style.display = 'none';
-      floatVisible = false;
-    }
-    floatText = '';
-  }
+  // Initialize button
+  SpeedReadButton.init();
   
-  function checkSelection() {
-    if (readerOverlay) { hideFloatBtn(); return; }
-    
-    const sel = window.getSelection();
-    const txt = sel ? sel.toString().trim() : '';
-    const words = txt.split(/\s+/).filter(w => w);
-    
-    if (words.length >= 3) {
-      showFloatBtn(txt);
-    } else {
-      hideFloatBtn();
-    }
-  }
-  
-  // Event listeners for selection
+  // Selection events
   document.addEventListener('mouseup', (e) => {
     if (e.target?.closest?.('#sr-float-btn')) return;
-    setTimeout(checkSelection, 50);
+    setTimeout(() => SpeedReadButton.check(), 50);
   }, true);
   
   document.addEventListener('mousedown', (e) => {
     if (e.target?.closest?.('#sr-float-btn')) return;
-    hideFloatBtn();
+    SpeedReadButton.hide();
   }, true);
   
   document.addEventListener('keyup', (e) => {
-    if (e.shiftKey) setTimeout(checkSelection, 50);
-    if (e.key === 'Escape') hideFloatBtn();
+    if (e.shiftKey) setTimeout(() => SpeedReadButton.check(), 50);
+    if (e.key === 'Escape') SpeedReadButton.hide();
   }, true);
-  
-  // Initialize button NOW
-  initFloatingButton();
-  
+
   // ============================================
   // REST OF EXTENSION CODE
   // ============================================
@@ -155,12 +152,6 @@
   let overlay = null;
   let shadow = null;
   let reader = null;
-  
-  // Link overlay to floating button visibility check
-  Object.defineProperty(window, '__srOverlay', {
-    get: () => overlay,
-    set: (v) => { overlay = v; readerOverlay = v; }
-  });
   
   // Default settings (will be overridden by saved settings)
   let settings = {
@@ -221,6 +212,9 @@
   async function openReader(text) {
     const cleanedText = cleanText(text);
     if (!cleanedText) return;
+    
+    // Hide floating button when reader opens
+    SpeedReadButton.hide();
 
     // Reload settings before opening
     await loadSettings();
@@ -231,7 +225,6 @@
 
     // Create host element
     overlay = document.createElement('div');
-    readerOverlay = overlay; // Link to floating button visibility check
     overlay.id = 'speed-reader-ext';
     overlay.style.cssText = 'all: initial; position: fixed; inset: 0; z-index: 2147483647;';
     
@@ -261,6 +254,9 @@
     document.body.appendChild(overlay);
     reader = new SpeedReaderWidget(cleanedText, shadow, settings);
   }
+
+  // Expose openReader globally for the floating button
+  window.__openSpeedReader = openReader;
 
   function getStyles(isDark) {
     // Theme colors
@@ -1395,7 +1391,6 @@
       document.removeEventListener('keydown', this.keyHandler);
       overlay.remove();
       overlay = null;
-      readerOverlay = null; // Allow floating button to show again
       shadow = null;
       reader = null;
     }
