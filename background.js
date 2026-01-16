@@ -12,6 +12,35 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
+// INJECT CONTENT SCRIPT ON EVERY PAGE LOAD
+// This ensures the floating button always works
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  // Only inject when page is fully loaded
+  if (changeInfo.status !== 'complete') return;
+  
+  // Skip chrome:// and other restricted URLs
+  if (!tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://') || 
+      tab.url.startsWith('about:') || tab.url.startsWith('edge://') || tab.url.startsWith('brave://')) {
+    return;
+  }
+  
+  try {
+    // Check if script is already loaded
+    await chrome.tabs.sendMessage(tabId, { action: 'ping' });
+  } catch {
+    // Script not loaded, inject it
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        files: ['content.js']
+      });
+      console.log('[Speed Reader] Injected into tab', tabId);
+    } catch (err) {
+      // Injection failed (restricted page), ignore
+    }
+  }
+});
+
 // Handle context menu clicks
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId === 'speedread-selection' && info.selectionText) {
