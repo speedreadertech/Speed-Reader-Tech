@@ -40,12 +40,11 @@ A browser extension that lets you speed read any text on the web using RSVP (Rap
    
    **[⬇️ Download Speed_Reader_Extension](https://github.com/speedreadertech/Speed-Reader-Tech/archive/refs/heads/main.zip)**
    
-   Click the link above or go to the repo and click **"Code" → "Download ZIP"**
+   Click the link above to download the ZIP file.
 
 2. **Extract the ZIP file**
    - Unzip the downloaded file
-   - You'll get a folder called `Speed-Reader-Tech-main`
-   - Inside is the `extension` folder - this is what you need
+   - You'll get a folder called `Speed-Reader-Tech-main` (this IS the extension)
 
 3. **Open your browser's Extensions page**
    - Chrome: Type `chrome://extensions` in the address bar
@@ -57,11 +56,11 @@ A browser extension that lets you speed read any text on the web using RSVP (Rap
    - Turn it **ON**
 
 5. **Load the extension**
-   - Click the **"Load unpacked"** button (appears after enabling Developer Mode)
-   - Navigate to the extracted folder
-   - Select the **entire `extension` folder** and click "Select Folder"
+   - Click the **"Load unpacked"** button
+   - Navigate to the extracted `Speed-Reader-Tech-main` folder
+   - Select the **entire folder** and click "Select Folder"
    
-   ⚠️ **Important:** Select the whole `extension` folder, not individual files inside it!
+   ⚠️ **Important:** Select the whole `Speed-Reader-Tech-main` folder, not individual files!
 
 6. **Pin the extension** (recommended)
    - Click the puzzle piece 🧩 icon in your browser toolbar
