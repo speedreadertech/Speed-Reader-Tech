@@ -77,17 +77,6 @@
       overlay.remove();
     }
 
-    // Load Inter font in main document (must be outside Shadow DOM to work)
-    if (!document.getElementById('speed-reader-font')) {
-      const fontLink = document.createElement('link');
-      fontLink.id = 'speed-reader-font';
-      fontLink.rel = 'stylesheet';
-      fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap';
-      document.head.appendChild(fontLink);
-      // Wait for font to load
-      await new Promise(r => setTimeout(r, 100));
-    }
-
     // Create host element
     overlay = document.createElement('div');
     overlay.id = 'speed-reader-ext';
@@ -106,13 +95,7 @@
       isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     }
     
-    // Inject font link into shadow root for Shadow DOM font access
-    const fontLinkClone = document.createElement('link');
-    fontLinkClone.rel = 'stylesheet';
-    fontLinkClone.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap';
-    shadow.appendChild(fontLinkClone);
-    
-    // Create style element
+    // Create style element (using system fonts - works on all sites)
     const styleEl = document.createElement('style');
     styleEl.textContent = getStyles(isDark);
     shadow.appendChild(styleEl);
@@ -154,17 +137,24 @@
       backdrop: 'rgba(0,0,0,0.4)'
     };
 
+    // Define the font stack as a constant for consistency
+    const fontStack = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+    
     return `
-      *, *::before, *::after {
+      /* Force system fonts as fallback - these ALWAYS work */
+      *, *::before, *::after,
+      div, span, p, h1, h2, h3, h4, h5, h6,
+      button, input, label, select, textarea,
+      a, strong, em, b, i {
         box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        font-family: ${fontStack} !important;
+        -webkit-font-smoothing: antialiased !important;
+        -moz-osx-font-smoothing: grayscale !important;
       }
       
       :host {
         all: initial;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        font-family: ${fontStack} !important;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         font-size: 13px;
@@ -178,6 +168,7 @@
         background: ${t.backdrop};
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
+        font-family: ${fontStack} !important;
       }
 
       .modal {
@@ -192,7 +183,7 @@
         box-shadow: 0 0 0 1px ${t.border}, 0 20px 40px -10px rgba(0,0,0,0.4);
         overflow: hidden;
         animation: modalIn 0.2s ease-out;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        font-family: ${fontStack} !important;
       }
 
       @keyframes modalIn {
