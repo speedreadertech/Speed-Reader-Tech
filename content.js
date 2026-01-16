@@ -14,11 +14,31 @@
     el: null,
     text: '',
     visible: false,
+    initialized: false,
     
     init() {
+      // Prevent double initialization
+      if (this.initialized) return;
       if (this.el) return;
+      
+      // Wait for body - try multiple strategies
       if (!document.body) {
-        document.addEventListener('DOMContentLoaded', () => this.init());
+        // Strategy 1: DOMContentLoaded (if not fired yet)
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => this.init());
+        } else {
+          // Strategy 2: requestAnimationFrame as fallback
+          requestAnimationFrame(() => this.init());
+        }
+        return;
+      }
+      
+      this.initialized = true;
+      
+      // Check if button already exists (from previous injection)
+      const existing = document.getElementById('sr-float-btn');
+      if (existing) {
+        this.el = existing;
         return;
       }
       
@@ -126,10 +146,16 @@
     }
   };
   
-  // Initialize button
+  // Initialize button with multiple fallbacks
   SpeedReadButton.init();
   
-  // Selection events
+  // Also try on DOMContentLoaded and load (belt and suspenders)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => SpeedReadButton.init());
+  }
+  window.addEventListener('load', () => SpeedReadButton.init());
+  
+  // Selection events - use capture phase for reliability
   document.addEventListener('mouseup', (e) => {
     if (e.target?.closest?.('#sr-float-btn')) return;
     setTimeout(() => SpeedReadButton.check(), 50);
