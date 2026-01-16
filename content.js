@@ -1438,39 +1438,31 @@
   
   let speedReadBtn = null;
   let capturedText = '';
+  let buttonIsShowing = false;  // Track if button is currently visible
   
-  // Sound effect for button appearance
+  // Sound effect - only plays when button first appears
   function playPopSound() {
     try {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      
-      oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.05);
-      oscillator.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.1);
-      
-      gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-      
-      oscillator.start(audioCtx.currentTime);
-      oscillator.stop(audioCtx.currentTime + 0.15);
-    } catch (e) {
-      // Audio not available, skip
-    }
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.setValueAtTime(600, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.08);
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.12);
+    } catch (e) {}
   }
   
-  // Create button (hidden by default)
-  function ensureButtonExists() {
-    if (speedReadBtn) return speedReadBtn;
+  // Create button element (always hidden initially)
+  function createButton() {
+    if (speedReadBtn) return;
     
     speedReadBtn = document.createElement('button');
-    speedReadBtn.id = 'sr-quick-btn';
-    
-    // Start HIDDEN
+    speedReadBtn.id = 'sr-float-btn';
     speedReadBtn.style.cssText = `
       all: initial !important;
       position: fixed !important;
@@ -1490,8 +1482,9 @@
       font-weight: 600 !important;
       cursor: pointer !important;
       box-shadow: 0 6px 24px rgba(217, 119, 87, 0.5) !important;
-      transform: translateY(0) scale(1) !important;
-      transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+      opacity: 0 !important;
+      transform: translateY(20px) !important;
+      transition: opacity 0.2s ease, transform 0.2s ease, box-shadow 0.15s ease !important;
       -webkit-font-smoothing: antialiased !important;
     `;
     
@@ -1502,134 +1495,119 @@
       <span style="color:white;font-weight:600">Speed Read</span>
     `;
     
-    // Hover effect
+    // Hover effects
     speedReadBtn.onmouseenter = () => {
-      speedReadBtn.style.transform = 'translateY(-2px) scale(1.02)';
-      speedReadBtn.style.boxShadow = '0 8px 28px rgba(217, 119, 87, 0.6)';
+      speedReadBtn.style.transform = 'translateY(-3px)';
+      speedReadBtn.style.boxShadow = '0 10px 30px rgba(217, 119, 87, 0.6)';
     };
     speedReadBtn.onmouseleave = () => {
-      speedReadBtn.style.transform = 'translateY(0) scale(1)';
+      speedReadBtn.style.transform = 'translateY(0)';
       speedReadBtn.style.boxShadow = '0 6px 24px rgba(217, 119, 87, 0.5)';
     };
     
-    // CLICK HANDLER - Opens the reader
+    // Click to open reader
     speedReadBtn.onclick = (e) => {
       e.preventDefault();
       e.stopPropagation();
-      e.stopImmediatePropagation();
       
-      const textToRead = capturedText;
-      console.log('[SR] Click! Opening reader with:', textToRead.substring(0, 100));
-      
-      // Hide button first
-      speedReadBtn.style.display = 'none';
-      
-      // Clear selection
+      const text = capturedText;
+      hideBtn();
       window.getSelection().removeAllRanges();
       
-      // Open reader with captured text
-      if (textToRead && textToRead.length > 0) {
-        openReader(textToRead);
+      if (text) {
+        openReader(text);
       }
     };
     
     document.body.appendChild(speedReadBtn);
-    return speedReadBtn;
   }
   
-  // Show button with animation
-  function showButton(text) {
-    ensureButtonExists();
+  // Show button (with animation and sound - but only if not already showing)
+  function showBtn(text) {
+    if (!speedReadBtn) createButton();
+    
+    // Update captured text
     capturedText = text;
     
-    // Animate in
-    speedReadBtn.style.display = 'flex';
-    speedReadBtn.style.animation = 'none';
-    speedReadBtn.offsetHeight; // Force reflow
-    speedReadBtn.style.animation = 'srPopIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
-    
-    // Play pop sound
-    playPopSound();
+    // Only animate and play sound if button wasn't already visible
+    if (!buttonIsShowing) {
+      buttonIsShowing = true;
+      speedReadBtn.style.display = 'flex';
+      
+      // Trigger animation after display change
+      requestAnimationFrame(() => {
+        speedReadBtn.style.opacity = '1';
+        speedReadBtn.style.transform = 'translateY(0)';
+      });
+      
+      // Play sound ONLY on initial show
+      playPopSound();
+    }
   }
   
   // Hide button
-  function hideButton() {
-    if (speedReadBtn) {
-      speedReadBtn.style.display = 'none';
+  function hideBtn() {
+    if (speedReadBtn && buttonIsShowing) {
+      speedReadBtn.style.opacity = '0';
+      speedReadBtn.style.transform = 'translateY(20px)';
+      
+      // Hide after animation
+      setTimeout(() => {
+        if (!buttonIsShowing) {
+          speedReadBtn.style.display = 'none';
+        }
+      }, 200);
+      
+      buttonIsShowing = false;
     }
     capturedText = '';
   }
   
-  // Inject keyframe animation
-  function injectStyles() {
-    if (document.getElementById('sr-btn-styles')) return;
-    const style = document.createElement('style');
-    style.id = 'sr-btn-styles';
-    style.textContent = `
-      @keyframes srPopIn {
-        0% { transform: translateY(30px) scale(0.8); opacity: 0; }
-        100% { transform: translateY(0) scale(1); opacity: 1; }
-      }
-    `;
-    document.head.appendChild(style);
-  }
-  
-  // Check selection and show/hide button
-  function checkSelection() {
-    // Don't show if reader is already open
+  // Check if we should show/hide based on selection
+  function updateButtonVisibility() {
+    // Don't show if reader overlay is open
     if (overlay) {
-      hideButton();
+      hideBtn();
       return;
     }
     
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) {
-      hideButton();
-      return;
-    }
+    const sel = window.getSelection();
+    const text = sel ? sel.toString().trim() : '';
+    const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
     
-    const text = selection.toString().trim();
-    const words = text.split(/\s+/).filter(w => w.length > 0);
-    
-    if (words.length >= 3) {
-      showButton(text);
+    if (wordCount >= 3) {
+      showBtn(text);
     } else {
-      hideButton();
+      hideBtn();
     }
   }
   
-  // Event: Mouse up (after selecting)
+  // Listen for selection end (mouseup)
   document.addEventListener('mouseup', (e) => {
-    // Don't trigger on our own button
-    if (e.target.closest && e.target.closest('#sr-quick-btn')) return;
-    
-    // Small delay to let selection finalize
-    setTimeout(checkSelection, 20);
+    if (e.target.closest?.('#sr-float-btn')) return;
+    setTimeout(updateButtonVisibility, 30);
   });
   
-  // Event: Mouse down (start of new selection clears old)
+  // Hide on mousedown (new selection starting)
   document.addEventListener('mousedown', (e) => {
-    // Don't hide if clicking our button
-    if (e.target.closest && e.target.closest('#sr-quick-btn')) return;
-    hideButton();
+    if (e.target.closest?.('#sr-float-btn')) return;
+    hideBtn();
   });
   
-  // Event: Keyboard selection (Shift+Arrows)
+  // Keyboard selection
   document.addEventListener('keyup', (e) => {
-    if (e.shiftKey || e.key === 'Shift') {
-      setTimeout(checkSelection, 20);
+    if (e.shiftKey) {
+      setTimeout(updateButtonVisibility, 30);
     }
     if (e.key === 'Escape') {
-      hideButton();
+      hideBtn();
     }
   });
   
-  // Event: Selection change (backup)
-  document.addEventListener('selectionchange', () => {
-    setTimeout(checkSelection, 50);
-  });
-  
-  // Initialize
-  injectStyles();
-  console.log('[Speed Reader] Floating button ready');
+  // Create button on load (stays hidden until needed)
+  if (document.body) {
+    createButton();
+  } else {
+    document.addEventListener('DOMContentLoaded', createButton);
+  }
 })();
