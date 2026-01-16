@@ -1369,6 +1369,11 @@
       overlay = null;
       shadow = null;
       reader = null;
+      
+      // Clear text selection so floating button doesn't reappear
+      try {
+        window.getSelection()?.removeAllRanges();
+      } catch (e) {}
     }
 
     handleKey(e) {
