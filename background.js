@@ -19,10 +19,15 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   }
 });
 
-// Handle keyboard shortcut (Ctrl+Shift+R / Cmd+Shift+R)
-chrome.commands.onCommand.addListener(async (command, tab) => {
+// Handle keyboard shortcut (Alt+S / Option+S)
+chrome.commands.onCommand.addListener(async (command) => {
   if (command === 'speed-read-selection') {
     try {
+      // Get the currently active tab
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tab?.id) return;
+      
+      // Get selected text from the page
       const results = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
         func: () => window.getSelection().toString().trim()

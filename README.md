@@ -71,12 +71,12 @@ A browser extension that lets you speed read any text on the web using RSVP (Rap
 
 ### Method 1: Floating Button (Easiest!)
 1. Highlight any text on a webpage (3+ words)
-2. A **⚡ Speed Read** button appears above your selection
+2. A **⚡ Speed Read** button slides up in the bottom-left corner
 3. Click it to start reading instantly
 
 ### Method 2: Keyboard Shortcut
 1. Highlight any text on a webpage
-2. Press **Ctrl+Shift+Space** (Windows/Linux) or **⌘+Shift+Space** (Mac)
+2. Press **Alt+S** (Windows/Linux) or **⌥S** (Mac)
 3. Speed reader opens with your selection
 
 ### Method 3: Right-Click Menu
@@ -99,6 +99,7 @@ A browser extension that lets you speed read any text on the web using RSVP (Rap
 
 | Key | Action |
 |-----|--------|
+| `Alt+S` / `⌥S` | Open speed reader with selection |
 | `Space` | Start / Pause / Resume |
 | `↑` | Increase speed (+50 WPM) |
 | `↓` | Decrease speed (-50 WPM) |

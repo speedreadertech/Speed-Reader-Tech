@@ -19,8 +19,8 @@
   "commands": {
     "speed-read-selection": {
       "suggested_key": {
-        "default": "Ctrl+Shift+Space",
-        "mac": "Command+Shift+Space"
+        "default": "Alt+S",
+        "mac": "Alt+S"
       },
       "description": "Speed read selected text"
     }

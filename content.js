@@ -1512,7 +1512,7 @@
       </svg>
       <div class="sr-btn-text">
         <span class="sr-btn-title">Speed Read</span>
-        <span class="sr-btn-hint"><span class="sr-btn-kbd">⌘⇧Space</span> or click</span>
+        <span class="sr-btn-hint"><span class="sr-btn-kbd">Alt+S</span> or click</span>
       </div>
     `;
     
